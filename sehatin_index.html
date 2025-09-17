@@ -1,0 +1,156 @@
+<!--
+  Sehatin - Single-file website (index.html)
+  Siap di-upload ke GitHub Pages.
+-->
+
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sehatin — Rekomendasi Menu & Kalkulator Sehat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#f6fbff; --card:#ffffff; --muted:#6b7280; --accent:#16a34a; --accent-2:#0ea5e9; --shadow:0 6px 20px rgba(16,24,40,0.08); font-family:'Inter',system-ui; }
+    body{margin:0;background:linear-gradient(180deg,#eef9f1 0%,var(--bg) 100%);color:#0f172a;}
+    .container{max-width:1100px;margin:28px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;box-shadow:var(--shadow)}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:0;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:22px;margin-top:22px}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}.sidebar{order:-1}}
+    .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+    .menu{padding:12px;border-radius:12px;background:linear-gradient(180deg,rgba(14,165,233,0.06),rgba(22,163,74,0.03));margin-bottom:12px;cursor:pointer;transition:.2s}
+    .menu:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+    .menu h3{margin:0;font-size:15px}
+    .menu p{margin:6px 0 0;color:var(--muted);font-size:13px}
+    footer{margin-top:22px;text-align:center;color:var(--muted);font-size:13px}
+    /* Kalkulator style */
+    .card input{width:100%;padding:8px;margin:6px 0;border:1px solid #e2e8f0;border-radius:8px;font-size:14px}
+    .card button{margin-top:10px;padding:10px;width:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:.2s;}
+    .card button:hover{opacity:.9}
+    #result{margin-top:12px;padding:10px;border-radius:10px;background:#f1f5f9;font-size:14px}
+    #result.ideal{background:#dcfce7;color:#166534}
+    #result.kurang{background:#e0f2fe;color:#075985}
+    #result.lebih{background:#fee2e2;color:#991b1b}
+    /* Detail halaman */
+    #detailPage{display:none}
+    .back-btn{display:inline-block;margin-bottom:12px;padding:8px 14px;background:var(--accent-2);color:white;font-weight:600;border-radius:8px;text-decoration:none;cursor:pointer;transition:.2s}
+    .back-btn:hover{opacity:.9}
+    .detail-content h2{margin-top:0}
+    .detail-content p{font-size:14px;line-height:1.5}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">S</div>
+        <div>
+          <h1>Sehatin</h1>
+          <p class="lead">10 rekomendasi menu sehat lengkap dengan resep & cara masak + kalkulator TB/BB</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="grid" id="mainPage">
+      <section>
+        <div class="card">
+          <h2>Rekomendasi Menu Sehat</h2>
+          <div id="menus"></div>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <div class="card">
+          <h3>Kalkulator Sehat</h3>
+          <label>Tinggi badan (cm)</label>
+          <input id="height" type="number" value="170">
+          <label>Berat badan (kg)</label>
+          <input id="weight" type="number" value="65">
+          <label>Usia (tahun)</label>
+          <input id="age" type="number" value="25">
+          <button onclick="hitung()">Hitung</button>
+          <div id="result"></div>
+        </div>
+      </aside>
+    </main>
+
+    <main id="detailPage">
+      <div class="card detail-content">
+        <a class="back-btn" onclick="showMain()">← Kembali ke daftar menu</a>
+        <h2 id="detailTitle"></h2>
+        <p><strong>Resep:</strong> <span id="detailResep"></span></p>
+        <p><strong>Cara Masak:</strong> <span id="detailCara"></span></p>
+        <p><strong>Total Kalori:</strong> <span id="detailKalori"></span></p>
+        <p><strong>Total Protein:</strong> <span id="detailProtein"></span></p>
+        <p><strong>Total Lemak:</strong> <span id="detailLemak"></span></p>
+      </div>
+    </main>
+
+    <footer>Dibuat oleh <strong>Sehatin</strong></footer>
+  </div>
+
+  <script>
+    const MENUS = [
+      {title:'Salad Quinoa & Alpukat', resep:'Quinoa, alpukat, tomat ceri, sayuran hijau, dressing lemon', cara:'Rebus quinoa hingga matang. Potong alpukat & tomat. Campur semua bahan, siram dengan dressing lemon.', kalori:'350 kkal', protein:'12 g', lemak:'14 g'},
+      {title:'Oatmeal Berry Bowl', resep:'Oat, susu rendah lemak, berry, kacang almond', cara:'Masak oat dengan susu. Sajikan dengan topping berry & almond.', kalori:'280 kkal', protein:'9 g', lemak:'7 g'},
+      {title:'Ikan Panggang & Ubi', resep:'Ikan salmon, ubi, sayur kukus', cara:'Bumbui ikan dengan garam & lada, panggang. Panggang ubi. Sajikan dengan sayur kukus.', kalori:'420 kkal', protein:'25 g', lemak:'16 g'},
+      {title:'Sup Ayam Jahe', resep:'Ayam, jahe, wortel, kentang, daun bawang', cara:'Rebus ayam dengan jahe. Tambahkan wortel & kentang. Masak hingga matang, taburi daun bawang.', kalori:'300 kkal', protein:'20 g', lemak:'10 g'},
+      {title:'Smoothie Hijau', resep:'Bayam, pisang, apel, yogurt, chia seed', cara:'Blender semua bahan hingga halus. Sajikan dingin.', kalori:'220 kkal', protein:'8 g', lemak:'5 g'},
+      {title:'Gado-Gado Modern', resep:'Sayur segar, tahu, tempe, telur rebus, saus kacang', cara:'Rebus sayur & telur. Goreng tahu & tempe. Sajikan dengan saus kacang.', kalori:'400 kkal', protein:'18 g', lemak:'15 g'},
+      {title:'Nasi Merah & Tumis Tempe', resep:'Nasi merah, tempe, brokoli', cara:'Tumis tempe & brokoli dengan sedikit minyak. Sajikan dengan nasi merah.', kalori:'350 kkal', protein:'14 g', lemak:'11 g'},
+      {title:'Sushi Bowl', resep:'Nasi quinoa, salmon matang, sayur, nori', cara:'Tata nasi dalam mangkuk. Tambahkan salmon, sayur, dan taburan nori.', kalori:'390 kkal', protein:'22 g', lemak:'13 g'},
+      {title:'Greek Yogurt Parfait', resep:'Greek yogurt, madu, granola, buah potong', cara:'Susun yogurt, buah, dan granola bergantian dalam gelas. Tambah madu di atasnya.', kalori:'250 kkal', protein:'10 g', lemak:'6 g'},
+      {title:'Tumis Sayur + Tahu Bumbu Kacang', resep:'Sayur, tahu, kacang tanah', cara:'Tumis sayur dengan sedikit minyak. Sajikan bersama tahu rebus & saus kacang.', kalori:'330 kkal', protein:'12 g', lemak:'9 g'}
+    ];
+
+    const menusEl = document.getElementById('menus');
+    MENUS.forEach((m,i) => {
+      const div = document.createElement('div');
+      div.className = 'menu';
+      div.innerHTML = `<h3>${m.title}</h3><p><strong>Resep singkat:</strong> ${m.resep}</p>`;
+      div.onclick = () => showDetail(i);
+      menusEl.appendChild(div);
+    });
+
+    function showDetail(idx){
+      const m = MENUS[idx];
+      document.getElementById('detailTitle').innerText = m.title;
+      document.getElementById('detailResep').innerText = m.resep;
+      document.getElementById('detailCara').innerText = m.cara;
+      document.getElementById('detailKalori').innerText = m.kalori;
+      document.getElementById('detailProtein').innerText = m.protein;
+      document.getElementById('detailLemak').innerText = m.lemak;
+      document.getElementById('mainPage').style.display = 'none';
+      document.getElementById('detailPage').style.display = 'block';
+    }
+
+    function showMain(){
+      document.getElementById('detailPage').style.display = 'none';
+      document.getElementById('mainPage').style.display = 'grid';
+    }
+
+    function hitung(){
+      const h = parseFloat(document.getElementById('height').value);
+      const w = parseFloat(document.getElementById('weight').value);
+      const bmi = (w / ((h/100)**2)).toFixed(1);
+
+      let kategori = '';
+      let cls = '';
+      if(bmi < 18.5){kategori = 'Berat badan kurang'; cls='kurang'}
+      else if(bmi >= 18.5 && bmi < 25){kategori = 'Ideal'; cls='ideal'}
+      else if(bmi >= 25 && bmi < 30){kategori = 'Berat badan berlebih'; cls='lebih'}
+      else{kategori = 'Obesitas'; cls='lebih'}
+
+      const res = document.getElementById('result');
+      res.className = cls;
+      res.innerHTML = `BMI: <strong>${bmi}</strong><br>Status: <strong>${kategori}</strong>`;
+    }
+  </script>
+</body>
+</html>
